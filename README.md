@@ -7,7 +7,7 @@ Include server.c and client.c file
 # Development Environment: Ubuntu 16.04
 In the next version, Maybe I will write a client.c based on the Windows platform
 
-# IDE: CodeBlocks16.01
+# IDE: Code::Blocks 16.01
 
 
 # Function:
