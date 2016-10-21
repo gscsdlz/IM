@@ -1,11 +1,11 @@
 # IM
-This is a instant message program with linux-c/c++ socket
-This IM program don not have a beautiful UI, just use the Terminal.(..◜ᴗ◝..)
+This is a instant message program with linux-c/c++ socket.
+This IM program don not have a beautiful UI, just use the Terminal.(..◜ᴗ◝..).
 
-Include server.c and client.c file
+Include server.cpp and client.cpp file.
 
 # Development Environment: Ubuntu 16.04
-In the next version, Maybe I will write a client.c based on the Windows platform
+In the next version, Maybe I will write a client based on the Windows platform
 
 # IDE: Code::Blocks 16.01
 
