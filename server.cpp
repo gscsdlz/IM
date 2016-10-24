@@ -47,7 +47,6 @@ private:
     int gid;
 };
 map<int, Group *>groupMap;  //int mains the gid
-map<int, int>socketMap;  //First int mains socket, second int mains gid;
 
 void error(char *message)
 {
@@ -82,65 +81,33 @@ int init(int port, int maxClnt)
     return serv_sock;
 }
 
-void sendInfo(char *message, int clnt_sock)
+void sendErrInfo(char *message, int clnt_sock)
 {
-    int gid = socketMap[clnt_sock];
-    if(gid == 0)
-    {
-        char errorMsg[] = "No such group!\n";
-        write(clnt_sock, errorMsg, sizeof(errorMsg));
-    }
-    else
-    {
-        groupMap[gid]->sendInfo(message);
-    }
+    
 }
 
-void login(char *message, int clnt_sock)
+int checkLogin(char *message)
 {
-    //message type Lusername:password:gid
-    int len = strlen(message);
-    char username[100];
-    char password[100];
-    char gidString[100];
-    int p1 = 0, p2 = 0, p3 = 0;
-    memset(username, '\0', sizeof(username));
-    memset(password, '\0', sizeof(password));
-    memset(gidString, '\0', sizeof(gidString));
-
-    int flag = 0;
-    for(int i = 1; i < len; ++i)
-    {
-        if(message[i] == ':')
-        {
-            flag++;
-            continue;
-        }
-        if(flag == 0)
-            username[p1++] = message[i];
-        else if(flag == 1)
-            password[p2++] = message[i];
-        else
-            gidString[p3++] = message[i];
-    }
+    //message type sha1(40)
+  
 
     /////////////////////////////
     //mysql SELECT;
     ////////////////////////////
-    int gid = atoi(gidString);  //from Database
-
+    int gid = 10000;  //from Database
     pthread_mutex_lock(&mtx);
-    socketMap[clnt_sock] = gid;
     if(groupMap[gid] == NULL)
         groupMap[gid] = new Group();
     groupMap[gid]->join(clnt_sock);
     pthread_mutex_unlock(&mtx);
+    return gid;
 }
 
 void * readInfo(void *arg)
 {
     int clnt_sock = *((int *)arg);
     int str_len = 0;
+    int gid = 0;
     char msgBuff[BUF_SIZE];
     memset(msgBuff, 0, sizeof(msgBuff));
     int recv_len;
@@ -152,17 +119,21 @@ void * readInfo(void *arg)
         str_len += recv_len;
         if(msgBuff[str_len - 1] == '\0') //recv all the info
         {
-            if(msgBuff[0] == 'L') // mains Login
-                login(msgBuff, clnt_sock);
-            else if(msgBuff[0] == 'S')
+            if(gid = checkLogin(msgBuff))
                 sendInfo(msgBuff, clnt_sock);
-
             memset(msgBuff, '\0', sizeof(msgBuff));
             str_len = 0;
         }
     }
-    if(socketMap[clnt_sock] != 0)
-        groupMap[socketMap[clnt_sock]]->leave(clnt_sock);
+    pthread_mutex_lock(&mtx);
+    if(gid)
+        groupMap[gid]->leave(clnt_sock);
+    if(groupMap[gid]->size() == 0)
+    {
+        delete groupMap[gid];
+        groupMap[gid] = NULL;
+    }     
+    pthread_mutex_unlock(&mtx);
     close(clnt_sock);
 }
 
