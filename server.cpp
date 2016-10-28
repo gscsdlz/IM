@@ -27,7 +27,6 @@ public:
     void leave(int socket_clnt)
     {
         userSocket.remove(socket_clnt);
-        close(socket_clnt);
     }
 
     bool find(int clnt_sock)
@@ -135,11 +134,13 @@ void * readInfo(void *arg)
     }
     pthread_mutex_lock(&mtx);
     if(gid)
+    { 
         groupMap[gid]->leave(clnt_sock);
-    if(groupMap[gid]->size() == 0)
-    {
-        delete groupMap[gid];
-        groupMap[gid] = NULL;
+        if(groupMap[gid]->size() == 0)
+        {
+            delete groupMap[gid];
+            groupMap[gid] = NULL;
+        }
     }
     pthread_mutex_unlock(&mtx);
     close(clnt_sock);
